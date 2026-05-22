@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CV Matching Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>CV Matching Game</h1>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <div id="notification" role="alert" aria-live="assertive" class="notification hidden"></div>
+
+    <!-- Home -->
+    <section id="screen-home" class="screen">
+      <div class="card">
+        <h2>Welcome</h2>
+        <p class="lead">Match personal statements to their authors and find out how personal they really are!</p>
+        <div class="button-stack">
+          <button id="btn-go-create" class="btn btn-primary btn-large">
+            Create a Game
+            <span class="btn-sub">For volunteers</span>
+          </button>
+          <button id="btn-go-join" class="btn btn-secondary btn-large">
+            Join a Game
+            <span class="btn-sub">For trainees</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Create Game -->
+    <section id="screen-create" class="screen hidden">
+      <div class="card">
+        <h2>Create a Game</h2>
+        <form id="form-create" novalidate>
+          <div class="form-group">
+            <label for="create-password">Game password</label>
+            <input type="password" id="create-password" name="password"
+                   placeholder="Choose a password" required minlength="3"
+                   autocomplete="new-password" aria-describedby="create-password-hint">
+            <p id="create-password-hint" class="hint">Share this with your trainees so they can join.</p>
+          </div>
+          <div class="button-row">
+            <button type="submit" class="btn btn-primary">Create Game</button>
+            <button type="button" id="btn-back-from-create" class="btn btn-ghost">Back</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Join Game -->
+    <section id="screen-join" class="screen hidden">
+      <div class="card">
+        <h2>Join a Game</h2>
+        <form id="form-join" novalidate>
+          <div class="form-group">
+            <label for="join-code">Game code</label>
+            <input type="text" id="join-code" name="code"
+                   placeholder="e.g. ABC123" required maxlength="6"
+                   autocomplete="off" inputmode="text" spellcheck="false">
+          </div>
+          <div class="form-group">
+            <label for="join-password">Password</label>
+            <input type="password" id="join-password" name="password"
+                   placeholder="Ask your volunteer for the password" required>
+          </div>
+          <div class="form-group">
+            <label for="join-name">Your name</label>
+            <input type="text" id="join-name" name="name"
+                   placeholder="Your name as it appears on your CV" required maxlength="50">
+          </div>
+          <div class="button-row">
+            <button type="submit" class="btn btn-primary">Join Game</button>
+            <button type="button" id="btn-back-from-join" class="btn btn-ghost">Back</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Host Lobby -->
+    <section id="screen-host-lobby" class="screen hidden">
+      <div class="card">
+        <h2>Game Lobby</h2>
+        <div class="game-code-box" aria-label="Game code">
+          <p class="label-text">Share this code with your trainees</p>
+          <p id="display-game-code" class="game-code" aria-live="polite"></p>
+          <p class="hint" id="host-password-reminder"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Players <span id="host-lobby-count" aria-live="polite"></span></h3>
+        <ul id="host-player-list" class="player-list" aria-label="Players in game"></ul>
+        <p id="start-hint" class="hint" aria-live="polite">Waiting for at least 2 players to submit their statements…</p>
+        <button id="btn-start-game" class="btn btn-primary" disabled aria-disabled="true">
+          Start Game
+        </button>
+      </div>
+    </section>
+
+    <!-- Player Lobby -->
+    <section id="screen-player-lobby" class="screen hidden">
+      <div class="card">
+        <h2 id="player-lobby-heading">Lobby</h2>
+        <ul id="player-list" class="player-list" aria-label="Players in game"></ul>
+      </div>
+
+      <div class="card" id="statement-form-card">
+        <h3>Your personal statement</h3>
+        <form id="form-statement" novalidate>
+          <div class="form-group">
+            <label for="personal-statement" class="sr-only">Personal statement</label>
+            <textarea id="personal-statement" name="statement" rows="7"
+                      placeholder="Paste your CV personal statement here…"
+                      required minlength="10" maxlength="2000"
+                      aria-describedby="statement-hint"></textarea>
+            <p id="statement-hint" class="hint">Paste it exactly as it appears on your CV.</p>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Statement</button>
+        </form>
+      </div>
+
+      <div class="card hidden" id="statement-done-card">
+        <p class="success-msg">&#x2713; Statement submitted!</p>
+        <p id="waiting-others" aria-live="polite" class="hint"></p>
+      </div>
+    </section>
+
+    <!-- Host Voting -->
+    <section id="screen-host-voting" class="screen hidden">
+      <div class="round-badge" aria-live="polite" id="host-round-label"></div>
+      <div class="card statement-card" role="article" aria-label="Personal statement to identify">
+        <p class="statement-label">Whose statement is this?</p>
+        <blockquote id="host-statement-text" class="statement-text"></blockquote>
+      </div>
+      <div class="card vote-progress-card">
+        <p id="host-vote-status" aria-live="polite" class="vote-status-text">Waiting for votes…</p>
+        <div class="progress-bar" role="progressbar" id="host-progress-bar"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-fill" id="host-progress-fill"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Player Voting -->
+    <section id="screen-player-voting" class="screen hidden">
+      <div class="round-badge" aria-live="polite" id="player-round-label"></div>
+      <div class="card statement-card" role="article" aria-label="Personal statement to identify">
+        <p class="statement-label">Whose statement is this?</p>
+        <blockquote id="player-statement-text" class="statement-text"></blockquote>
+      </div>
+
+      <div class="card" id="vote-form-card">
+        <form id="form-vote" novalidate>
+          <fieldset>
+            <legend>Choose a name</legend>
+            <ul id="vote-options" class="vote-options" role="list"></ul>
+          </fieldset>
+          <button type="submit" id="btn-cast-vote" class="btn btn-primary" disabled>
+            Submit Vote
+          </button>
+        </form>
+        <div id="voted-card" class="hidden">
+          <p id="voted-status" aria-live="polite" class="hint"></p>
+        </div>
+      </div>
+
+      <div class="card hidden" id="author-card">
+        <p class="author-notice">This is your statement! Sit tight while others vote.</p>
+        <p id="author-vote-count" aria-live="polite" class="hint"></p>
+      </div>
+    </section>
+
+    <!-- Round Results -->
+    <section id="screen-round-results" class="screen hidden">
+      <div class="round-badge" id="results-round-label"></div>
+      <div class="card reveal-card">
+        <p class="reveal-label">This statement belonged to:</p>
+        <p id="result-author-name" class="reveal-name" aria-live="polite"></p>
+      </div>
+      <div class="card statement-card">
+        <blockquote id="result-statement" class="statement-text"></blockquote>
+      </div>
+      <div class="card">
+        <p id="correct-count-text" class="correct-count" aria-live="polite"></p>
+        <ul id="guesses-list" class="guesses-list" aria-label="How everyone voted"></ul>
+      </div>
+      <div id="host-next-btn" class="hidden">
+        <button id="btn-next-round" class="btn btn-primary btn-large">Next Statement &#x2192;</button>
+      </div>
+      <p id="player-wait-msg" class="hint hidden">Waiting for the host to continue…</p>
+    </section>
+
+    <!-- Game Over -->
+    <section id="screen-game-over" class="screen hidden">
+      <div class="card">
+        <h2>Game Over!</h2>
+        <p class="lead">Here's how personal everyone's statements were:</p>
+      </div>
+      <div class="card table-card">
+        <div class="table-scroll">
+          <table class="results-table" aria-label="Final results">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Statement excerpt</th>
+                <th scope="col">Correctly guessed</th>
+                <th scope="col">Verdict</th>
+              </tr>
+            </thead>
+            <tbody id="final-results-body"></tbody>
+          </table>
+        </div>
+        <p id="game-summary" class="game-summary" aria-live="polite"></p>
+      </div>
+      <button id="btn-new-game" class="btn btn-primary btn-large">Play Again</button>
+    </section>
+  </main>
+
+  <script src="socket.io.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
